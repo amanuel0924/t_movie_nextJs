@@ -4,6 +4,7 @@ import { programSchema } from "@/schema"
 import { revalidatePath } from "next/cache"
 import { createFilterCondition } from "@/utils/queryGenerator"
 import { mergeFilterfn, mergeFilterDatatype } from "@/utils/tableUtils"
+import { createWhereClause } from "./sharedAction"
 
 interface CreateFormStateType {
   errors: {
@@ -38,25 +39,6 @@ type Filter = {
 type GlobalFilter = {
   value: string
   columuns?: string[]
-}
-const createWhereClause = (filters: Filter[], globalFilter: GlobalFilter) => {
-  let where: any = {}
-
-  if (globalFilter.value) {
-    const global = globalFilter?.columuns?.map((column) => ({
-      [column]: { contains: globalFilter.value, mode: "insensitive" },
-    }))
-    where.OR = global
-  }
-
-  filters.forEach(({ id: column, value, mode, type }) => {
-    where = {
-      ...where,
-      ...createFilterCondition(column, value, mode || "", type || ""),
-    }
-  })
-
-  return where
 }
 
 export const getAdminData = async (urlquery: GetAdminDataQuery) => {
