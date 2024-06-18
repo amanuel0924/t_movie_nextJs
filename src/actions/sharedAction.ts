@@ -1,18 +1,16 @@
 "use server"
+
 import { db } from "@/db"
-import { Filter, GlobalFilter, GetAdminDataQuery } from "./types"
+import {
+  Filter,
+  GlobalFilter,
+  GetAdminDataQuery,
+  CreateChannelFormStateType,
+  CreateProgramFormStateType,
+} from "./types"
 import { createFilterCondition } from "@/utils/queryGenerator"
 import { mergeFilterfn, mergeFilterDatatype } from "@/utils/tableUtils"
 import { revalidatePath } from "next/cache"
-
-type PrismaTableProps = {
-  urlquery: GetAdminDataQuery
-  table: string
-}
-type singleDataProps = {
-  id: number
-  table: string
-}
 
 export const createWhereClause = (
   filters: Filter[],
@@ -37,6 +35,14 @@ export const createWhereClause = (
   return where
 }
 
+type PrismaTableProps = {
+  urlquery: GetAdminDataQuery
+  table: string
+}
+type singleDataProps = {
+  id: number
+  table: string
+}
 export const getAdminDataForAll = async ({
   urlquery,
   table,
@@ -93,7 +99,7 @@ export const getAdminDataForAll = async ({
   }
 }
 
-export const getDataByIdForAll = async ({ id, table }: singleDataProps) => {
+export const getDataById = async ({ id, table }: singleDataProps) => {
   try {
     //@ts-ignore
     const data = await db[table].findUnique({
@@ -109,7 +115,7 @@ export const getDataByIdForAll = async ({ id, table }: singleDataProps) => {
   }
 }
 
-export const toglerStatusForAll = async ({ id, table }: singleDataProps) => {
+export const toglerStatus = async ({ id, table }: singleDataProps) => {
   try {
     //@ts-ignore
     const data = await db[table].findUnique({
@@ -137,7 +143,7 @@ export const toglerStatusForAll = async ({ id, table }: singleDataProps) => {
   revalidatePath("/channel")
 }
 
-export const deleteDataForAll = async ({ id, table }: singleDataProps) => {
+export const deleteData = async ({ id, table }: singleDataProps) => {
   try {
     //@ts-ignore
     await db[table].delete({
@@ -149,7 +155,6 @@ export const deleteDataForAll = async ({ id, table }: singleDataProps) => {
     if (error instanceof Error) {
       return error.message
     }
-    return null
   }
   revalidatePath("/program")
   revalidatePath("/channel")
