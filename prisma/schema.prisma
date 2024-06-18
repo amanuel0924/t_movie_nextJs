@@ -43,7 +43,7 @@ model Channel {
   name     String
   status   Boolean  @default(true)
   movies   Movie[]
-  showTime DateTime
+  showTime DateTime?
 }
 
 model Type {
