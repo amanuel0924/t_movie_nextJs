@@ -1,14 +1,18 @@
 "use server"
 import { db } from "@/db"
-import {
-  Filter,
-  GlobalFilter,
-  GetAdminDataQuery,
-  CreateChannelFormStateType,
-  CreateProgramFormStateType,
-} from "./types"
+import { Filter, GlobalFilter, GetAdminDataQuery } from "./types"
 import { createFilterCondition } from "@/utils/queryGenerator"
 import { mergeFilterfn, mergeFilterDatatype } from "@/utils/tableUtils"
+import { revalidatePath } from "next/cache"
+
+type PrismaTableProps = {
+  urlquery: GetAdminDataQuery
+  table: string
+}
+type singleDataProps = {
+  id: number
+  table: string
+}
 
 export const createWhereClause = (
   filters: Filter[],
@@ -33,57 +37,120 @@ export const createWhereClause = (
   return where
 }
 
-// export const getAdminDataForAll = async (
-//   urlquery: GetAdminDataQuery,
-//   table: PrismaClient
-// ) => {
-//   const {
-//     start,
-//     size,
-//     filters,
-//     globalFilter,
-//     sorting,
-//     customVariantsTypes,
-//     filtersFns,
-//   } = urlquery
+export const getAdminDataForAll = async ({
+  urlquery,
+  table,
+}: PrismaTableProps) => {
+  const {
+    start,
+    size,
+    filters,
+    globalFilter,
+    sorting,
+    customVariantsTypes,
+    filtersFns,
+  } = urlquery
 
-//   const parsedFilters = filters ? JSON.parse(filters) : []
-//   const parsedGlobalFilter = globalFilter ? JSON.parse(globalFilter) : {}
-//   const parsedSorting = sorting ? JSON.parse(sorting) : []
-//   const columnFilterFns = filtersFns ? JSON.parse(filtersFns) : {}
-//   const customVariantsTypesObj = customVariantsTypes
-//     ? JSON.parse(customVariantsTypes)
-//     : {}
-//   let query = { ...parsedFilters }
-//   query = mergeFilterfn(parsedFilters, columnFilterFns)
-//   query = mergeFilterDatatype(query, customVariantsTypesObj)
+  const parsedFilters = filters ? JSON.parse(filters) : []
+  const parsedGlobalFilter = globalFilter ? JSON.parse(globalFilter) : {}
+  const parsedSorting = sorting ? JSON.parse(sorting) : []
+  const columnFilterFns = filtersFns ? JSON.parse(filtersFns) : {}
+  const customVariantsTypesObj = customVariantsTypes
+    ? JSON.parse(customVariantsTypes)
+    : {}
+  let query = { ...parsedFilters }
+  query = mergeFilterfn(parsedFilters, columnFilterFns)
+  query = mergeFilterDatatype(query, customVariantsTypesObj)
 
-//   console.log("filter", query)
+  console.log("filter", query)
 
-//   const where = createWhereClause(query, parsedGlobalFilter)
+  const where = await createWhereClause(query, parsedGlobalFilter)
 
-//   try {
-//     const data = await table.findMany({
-//       where,
-//       orderBy: parsedSorting,
-//       skip: start ? parseInt(start) : 0,
-//       take: size ? parseInt(size) : 10,
-//     })
+  try {
+    //@ts-ignore
+    const data = await db[table].findMany({
+      where,
+      orderBy: parsedSorting,
+      skip: start ? parseInt(start) : 0,
+      take: size ? parseInt(size) : 10,
+    })
+    //@ts-ignore
+    const totalRowCount = await [table].count({ where })
 
-//     const totalRowCount = await db.movie.count({ where })
+    return {
+      data,
+      meta: {
+        totalRowCount,
+      },
+    }
+  } catch (error: unknown) {
+    return {
+      data: [],
+      meta: {
+        totalRowCount: 0,
+      },
+    }
+  }
+}
 
-//     return {
-//       data,
-//       meta: {
-//         totalRowCount,
-//       },
-//     }
-//   } catch (error: unknown) {
-//     return {
-//       data: [],
-//       meta: {
-//         totalRowCount: 0,
-//       },
-//     }
-//   }
-// }
+export const getDataByIdForAll = async ({ id, table }: singleDataProps) => {
+  try {
+    //@ts-ignore
+    const data = await db[table].findUnique({
+      where: {
+        id,
+      },
+    })
+    return data
+  } catch (error: unknown) {
+    return {
+      data: [],
+    }
+  }
+}
+
+export const toglerStatusForAll = async ({ id, table }: singleDataProps) => {
+  try {
+    //@ts-ignore
+    const data = await db[table].findUnique({
+      where: {
+        id,
+      },
+    })
+
+    if (!data) {
+      return null
+    }
+    //@ts-ignore
+    await db[table].update({
+      where: {
+        id,
+      },
+      data: {
+        status: !data.status,
+      },
+    })
+  } catch (error: unknown) {
+    return null
+  }
+  revalidatePath("/program")
+  revalidatePath("/channel")
+}
+
+export const deleteDataForAll = async ({ id, table }: singleDataProps) => {
+  try {
+    //@ts-ignore
+    await db[table].delete({
+      where: {
+        id,
+      },
+    })
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      return error.message
+    }
+    return null
+  }
+  revalidatePath("/program")
+  revalidatePath("/channel")
+}

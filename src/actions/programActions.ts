@@ -4,7 +4,12 @@ import { programSchema } from "@/schema"
 import { revalidatePath } from "next/cache"
 import { createFilterCondition } from "@/utils/queryGenerator"
 import { mergeFilterfn, mergeFilterDatatype } from "@/utils/tableUtils"
-import { createWhereClause } from "./sharedAction"
+import {
+  getAdminDataForAll,
+  deleteDataForAll,
+  toglerStatusForAll,
+  getDataByIdForAll,
+} from "./sharedAction"
 
 interface CreateFormStateType {
   errors: {
@@ -29,104 +34,24 @@ type GetAdminDataQuery = {
   filtersFns?: string
   customVariantsTypes?: string
 }
-type Filter = {
-  id: string
-  value: string
-  mode?: string
-  type?: string
-}
-
-type GlobalFilter = {
-  value: string
-  columuns?: string[]
-}
 
 export const getAdminData = async (urlquery: GetAdminDataQuery) => {
-  const {
-    start,
-    size,
-    filters,
-    globalFilter,
-    sorting,
-    customVariantsTypes,
-    filtersFns,
-  } = urlquery
-
-  const parsedFilters = filters ? JSON.parse(filters) : []
-  const parsedGlobalFilter = globalFilter ? JSON.parse(globalFilter) : {}
-  const parsedSorting = sorting ? JSON.parse(sorting) : []
-  const columnFilterFns = filtersFns ? JSON.parse(filtersFns) : {}
-  const customVariantsTypesObj = customVariantsTypes
-    ? JSON.parse(customVariantsTypes)
-    : {}
-  let query = { ...parsedFilters }
-  query = mergeFilterfn(parsedFilters, columnFilterFns)
-  query = mergeFilterDatatype(query, customVariantsTypesObj)
-
-  console.log("filter", query)
-
-  const where = createWhereClause(query, parsedGlobalFilter)
-
-  try {
-    const data = await db.movie.findMany({
-      where,
-      orderBy: parsedSorting,
-      skip: start ? parseInt(start) : 0,
-      take: size ? parseInt(size) : 10,
-    })
-
-    const totalRowCount = await db.movie.count({ where })
-
-    return {
-      data,
-      meta: {
-        totalRowCount,
-      },
-    }
-  } catch (error: unknown) {
-    return {
-      data: [],
-      meta: {
-        totalRowCount: 0,
-      },
-    }
-  }
+  return await getAdminDataForAll({ urlquery, table: "movie" })
 }
 
 export const getDataId = async (id: number) => {
-  return await db.movie.findUnique({
-    where: {
-      id,
-    },
-  })
+  return await getDataByIdForAll({ id, table: "movie" })
 }
 
 export const toglerStatus = async (id: number) => {
-  try {
-    const data = await db.movie.findUnique({
-      where: {
-        id,
-      },
-    })
-
-    if (!data) {
-      return null
-    }
-
-    await db.movie.update({
-      where: {
-        id,
-      },
-      data: {
-        status: !data.status,
-      },
-    })
-  } catch (error: unknown) {
-    return null
-  }
-  revalidatePath("/program")
+  return await toglerStatusForAll({ id, table: "movie" })
 }
-
+export const deleteData = async (id: number) => {
+  return await deleteDataForAll({ id, table: "movie" })
+}
+export const getUserData = async () => {
+  return await db.movie.findMany()
+}
 export const getCategoryMovieCounts = async () => {
   const categoryCounts = await db.movie.groupBy({
     by: ["categoryId"],
@@ -135,10 +60,6 @@ export const getCategoryMovieCounts = async () => {
     },
   })
   return categoryCounts
-}
-
-export const getUserData = async () => {
-  return await db.movie.findMany()
 }
 
 export const createData = async (
@@ -233,16 +154,6 @@ export const updateData = async (
   return {
     errors: {},
   }
-}
-
-export const deleteData = async (id: number) => {
-  await db.movie.delete({
-    where: {
-      id,
-    },
-  })
-  revalidatePath("/program")
-  revalidatePath("/channel")
 }
 
 export const getChannels = async () => {
