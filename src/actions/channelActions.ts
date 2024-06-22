@@ -209,6 +209,7 @@ export const deleteData = async (id: number) => {
       id,
     },
   })
+
   revalidatePath("/program")
   revalidatePath("/channel")
 }

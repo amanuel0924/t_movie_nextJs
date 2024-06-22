@@ -22,6 +22,7 @@ import { useContext } from "react"
 import { ModalContext } from "@/components/programComponents/ModalContext"
 import type { Channel, Category, Type, Movie } from "@prisma/client"
 import { updateData } from "@/actions/programActions"
+import { useSession } from "next-auth/react"
 
 const style = {
   position: "absolute",
@@ -46,9 +47,10 @@ const UpdateForm = ({ channels, categorys, types }: ProgramFormProps) => {
     useContext(ModalContext)
 
   const moviesData: Movie = movie as Movie
+  const { data: session, status } = useSession()
 
   const [formState, action] = useFormState(
-    updateData.bind(null, moviesData.id),
+    updateData.bind(null, moviesData.id, session?.user?.roleId as number),
     {
       errors: {},
     }

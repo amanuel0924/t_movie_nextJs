@@ -3,23 +3,18 @@ import IosShareIcon from "@mui/icons-material/IosShare"
 import FilterListIcon from "@mui/icons-material/FilterList"
 import SearchIcon from "@mui/icons-material/Search"
 import PageHeaderButton from "./PageHeaderButton"
+import { options } from "@/app/api/auth/[...nextauth]/options"
 
-const PagesHeader = () => {
-  //   const navigate = useNavigate()
-  //   const location = useLocation()
-  //   const { keyword: urlKeyword } = useParams()
-  //   const [keyword, setKeyword] = useState(urlKeyword || "");
+import { defineAbilitiesFor } from "@/db/reactCasl"
+import { getServerSession } from "next-auth"
 
-  //   const searchHandler = () => {
-
-  //     if(location.pathname.includes('program')&&keyword){
-  //       navigate(`/admin/program/search/${keyword}`)
-  //     }else if(location.pathname.includes('channel')&&keyword){
-  //       navigate(`/admin/channel/search/${keyword}`)
-  //     }else{
-  //     navigate(`/admin/${location.pathname.split('/')[2]}` )
-  //     }
-  //   }
+const PagesHeader = async () => {
+  const session = await getServerSession(options)
+  // const abilities = await defineAbilitiesForReact(
+  //   session?.user.roleId as number
+  // )
+  console.log("fromHeader", session)
+  const abilities = await defineAbilitiesFor(session?.user.roleId as number)
 
   return (
     <Grid container spacing={2} sx={{ padding: 2 }}>
@@ -72,6 +67,7 @@ const PagesHeader = () => {
         >
           Export
         </Button>
+
         <Button
           size="small"
           sx={{ color: "#181A41" }}
@@ -80,7 +76,8 @@ const PagesHeader = () => {
         >
           Add Filter
         </Button>
-        <PageHeaderButton />
+
+        {abilities?.can("create", "Movie") && <PageHeaderButton />}
       </Grid>
     </Grid>
   )

@@ -6,6 +6,11 @@ import { createFilterCondition } from "@/utils/queryGenerator"
 import { mergeFilterfn, mergeFilterDatatype } from "@/utils/tableUtils"
 import { createWhereClause } from "./sharedAction"
 
+import { defineAbilitiesFor } from "@/db/reactCasl"
+import { packRules } from "@casl/ability/extra"
+import { accessibleBy, createPrismaAbility } from "@casl/prisma"
+import { User } from "@prisma/client"
+
 interface CreateFormStateType {
   errors: {
     title?: string[]
@@ -29,19 +34,11 @@ type GetAdminDataQuery = {
   filtersFns?: string
   customVariantsTypes?: string
 }
-type Filter = {
-  id: string
-  value: string
-  mode?: string
-  type?: string
-}
 
-type GlobalFilter = {
-  value: string
-  columuns?: string[]
-}
-
-export const getAdminData = async (urlquery: GetAdminDataQuery) => {
+export const getAdminData = async (
+  urlquery: GetAdminDataQuery,
+  role: number
+) => {
   const {
     start,
     size,
@@ -63,14 +60,15 @@ export const getAdminData = async (urlquery: GetAdminDataQuery) => {
   query = mergeFilterfn(parsedFilters, columnFilterFns)
   query = mergeFilterDatatype(query, customVariantsTypesObj)
 
-  console.log("filter", query)
-
   const where = await createWhereClause(query, parsedGlobalFilter)
-  console.log("where", where)
+  const abilities = await defineAbilitiesFor(role)
+  console.log(abilities)
 
   try {
     const data = await db.movie.findMany({
-      where,
+      where: {
+        AND: [accessibleBy(abilities).Movie, { ...where }],
+      },
       orderBy: parsedSorting,
       skip: start ? parseInt(start) : 0,
       take: size ? parseInt(size) : 10,
@@ -143,9 +141,18 @@ export const getUserData = async () => {
 }
 
 export const createData = async (
+  role: number,
+  userId: string,
   formState: CreateFormStateType,
   formData: FormData
 ): Promise<CreateFormStateType> => {
+  const abilities = await defineAbilitiesFor(role)
+
+  if (!abilities?.can("create", "Movie")) {
+    return {
+      errors: { _form: ["not allowed"] },
+    }
+  }
   const result = programSchema.safeParse({
     title: formData.get("title") as string,
     channelId: Number(formData.get("channel")),
@@ -167,8 +174,12 @@ export const createData = async (
 
   try {
     await db.movie.create({
-      data: result.data,
+      data: {
+        ...result.data,
+        creatorId: userId,
+      },
     })
+    // socket.emit("onDataChange")
   } catch (error: unknown) {
     if (error instanceof Error) {
       return {
@@ -189,9 +200,16 @@ export const createData = async (
 
 export const updateData = async (
   id: number,
+  role: number,
   formState: CreateFormStateType,
   formData: FormData
 ): Promise<CreateFormStateType> => {
+  const abilit = await defineAbilitiesFor(role)
+  if (!abilit?.can("update", "Movie")) {
+    return {
+      errors: { _form: ["not allowed"] },
+    }
+  }
   const result = programSchema.safeParse({
     title: formData.get("title") as string,
     channelId: Number(formData.get("channel")),
@@ -236,12 +254,21 @@ export const updateData = async (
   }
 }
 
-export const deleteData = async (id: number) => {
-  await db.movie.delete({
-    where: {
-      id,
-    },
-  })
+export const deleteData = async (id: number, role: number) => {
+  const abilit = await defineAbilitiesFor(role)
+
+  if (abilit?.can("delete", "Movie")) {
+    await db.movie.delete({
+      where: {
+        id,
+      },
+    })
+  } else {
+    console.log("not allowed")
+    return null
+  }
+
+  // io.emit("onDataChange")
   revalidatePath("/program")
   revalidatePath("/channel")
 }

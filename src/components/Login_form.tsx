@@ -4,11 +4,19 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { loginSchema } from "@/schema"
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { useEffect } from "react"
 
 export default function Login_form() {
   const router = useRouter()
+  const { data: session, status: sessionStatus } = useSession()
+
+  useEffect(() => {
+    if (sessionStatus === "authenticated") {
+      router.replace("/admin")
+    }
+  }, [sessionStatus, router])
   const {
     register,
     handleSubmit,
@@ -31,47 +39,50 @@ export default function Login_form() {
   }
 
   return (
-    <Stack
-      spacing={4}
-      sx={{
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100%",
-      }}
-    >
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Typography variant={"h2"}>Login</Typography>
+    <>
+      <Stack
+        spacing={4}
+        sx={{
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100%",
+        }}
+      >
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Typography variant={"h2"}>Login</Typography>
 
-        <Box sx={{ width: "full" }}>
-          <TextField
-            margin="normal"
-            fullWidth
-            id="email"
-            label="Email Address"
-            error={!!errors.email}
-            helperText={errors.email?.message}
-            {...register("email")}
-          />
-          <TextField
-            margin="normal"
-            fullWidth
-            {...register("password")}
-            label="Password"
-            type="password"
-            error={!!errors.password}
-            helperText={errors.password?.message}
-            id="password"
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-          >
-            Sign In
-          </Button>
-        </Box>
-      </form>
-    </Stack>
+          <Box sx={{ width: "full" }}>
+            <TextField
+              margin="normal"
+              fullWidth
+              id="email"
+              label="Email Address"
+              error={!!errors.email}
+              helperText={errors.email?.message}
+              {...register("email")}
+            />
+            <TextField
+              margin="normal"
+              fullWidth
+              {...register("password")}
+              label="Password"
+              type="password"
+              error={!!errors.password}
+              helperText={errors.password?.message}
+              id="password"
+            />
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Sign In
+            </Button>
+          </Box>
+        </form>
+      </Stack>
+    </>
   )
 }

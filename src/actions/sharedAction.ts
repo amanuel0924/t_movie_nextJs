@@ -17,6 +17,7 @@ export const createWhereClause = (
   globalFilter: GlobalFilter
 ) => {
   let where: any = {}
+  console.log("globalFilter", globalFilter)
 
   if (globalFilter.value) {
     const global = globalFilter?.columuns?.map((column) => ({
@@ -33,6 +34,37 @@ export const createWhereClause = (
   })
 
   return where
+}
+
+export const parsequery = (urlquery: GetAdminDataQuery) => {
+  const {
+    start,
+    size,
+    filters,
+    globalFilter,
+    sorting,
+    customVariantsTypes,
+    filtersFns,
+  } = urlquery
+
+  const parsedFilters = filters ? JSON.parse(filters) : []
+  const parsedGlobalFilter = globalFilter ? JSON.parse(globalFilter) : {}
+  const parsedSorting = sorting ? JSON.parse(sorting) : []
+  const columnFilterFns = filtersFns ? JSON.parse(filtersFns) : {}
+  const customVariantsTypesObj = customVariantsTypes
+    ? JSON.parse(customVariantsTypes)
+    : {}
+  let query = { ...parsedFilters }
+  query = mergeFilterfn(parsedFilters, columnFilterFns)
+  query = mergeFilterDatatype(query, customVariantsTypesObj)
+
+  return {
+    query,
+    parsedGlobalFilter,
+    parsedSorting,
+    size,
+    start,
+  }
 }
 
 type PrismaTableProps = {

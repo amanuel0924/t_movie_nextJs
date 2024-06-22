@@ -21,6 +21,7 @@ import { useContext } from "react"
 import { ModalContext } from "@/components/programComponents/ModalContext"
 import type { Channel, Category, Type } from "@prisma/client"
 import { createData } from "@/actions/programActions"
+import { useSession } from "next-auth/react"
 
 const style = {
   position: "absolute",
@@ -42,7 +43,15 @@ interface ProgramFormProps {
 
 const ProgramForm = ({ channels, categorys, types }: ProgramFormProps) => {
   const { isModalOpen, closeModal } = useContext(ModalContext)
-  const [formState, action] = useFormState(createData, { errors: {} })
+  const { data: session, status } = useSession()
+  const [formState, action] = useFormState(
+    createData.bind(
+      null,
+      session?.user?.roleId as number,
+      session?.user?.id as string
+    ),
+    { errors: {} }
+  )
 
   return (
     <Modal
@@ -208,35 +217,14 @@ const ProgramForm = ({ channels, categorys, types }: ProgramFormProps) => {
             <Button onClick={closeModal} variant={"outlined"}>
               Cancel
             </Button>
-            {/* {!id && !deleteId && ( */}
 
             <Button
               sx={{ color: "white", bgcolor: "#181A41" }}
               variant={"contained"}
-              // onClick={handleCreate}
               type="submit"
             >
               Create
             </Button>
-            {/* )} */}
-            {/* {id && (
-            <Button
-              sx={{ color: "white", bgcolor: "#181A41" }}
-              variant={"contained"}
-              onClick={handleUpdate}
-            >
-              {loading ? <Loader /> : "Update"}
-            </Button>
-          )} */}
-            {/* {deleteId && (
-            <Button
-              sx={{ color: "white", bgcolor: "#181A41" }}
-              variant={"contained"}
-              onClick={handleDelete}
-            >
-              {loading ? <Loader /> : "Delete"}
-            </Button>
-          )} */}
           </Box>
         </Box>
       </form>

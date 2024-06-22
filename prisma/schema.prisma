@@ -14,14 +14,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+
 
 model Movie {
   id          Int      @id @default(autoincrement())
@@ -37,6 +30,8 @@ model Movie {
   category    Category @relation(fields: [categoryId], references: [id])
   videoUrl    String?
   released    DateTime
+  creatorId    String
+  creator      User     @relation(fields: [creatorId], references: [id])
 }
 
 model Channel {
@@ -59,3 +54,40 @@ model Category {
   name   String
   movies Movie[]
 }
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Permission Permission[]
+  User User[]
+}
+
+model Permission {
+  id Int @unique @default(autoincrement())
+  role Role @relation(fields: [roleId], references: [id])
+  roleId Int
+  action String
+  subject  String
+  inverted Boolean @default(false)
+  condition Json?
+  reason     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @relation(fields: [roleId], references: [id])
+  roleId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Movie     Movie[]
+}
+

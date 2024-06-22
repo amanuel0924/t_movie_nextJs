@@ -6,6 +6,10 @@ import Typography from "@mui/material/Typography"
 import { getCategoryMovieCounts, getUserData } from "@/actions/programActions"
 import { Movie } from "@prisma/client"
 import dynamic from "next/dynamic"
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
+import MovieCountCard from "@/components/adminComponets/MovieCountCard"
+import { Suspense } from "react"
 
 export interface MovieCount {
   categoryId: number
@@ -20,6 +24,12 @@ const MyChart = dynamic(() => import("@/components/adminComponets/PieChart"), {
 const Overview = async () => {
   const categoryMoviecount: MovieCount[] = await getCategoryMovieCounts()
   const totalMovie: Movie[] = await getUserData()
+  const session = await getServerSession()
+
+  if (!session) {
+    redirect("/login")
+  }
+
   return (
     <Paper sx={{ padding: 2, display: "flex", flexDirection: "column" }}>
       <Box
@@ -77,49 +87,9 @@ const Overview = async () => {
             </Box>
           </Box>
         </Card>
-        <Card elevation={5} sx={{ display: "flex", minWidth: 270 }}>
-          <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
-            <CardContent
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "space-between",
-              }}
-            >
-              <Typography component="div" variant="h6">
-                Program
-              </Typography>
-              <Avatar
-                variant="rounded"
-                sx={{ bgcolor: "#161638", width: 35, mt: 1, height: 35 }}
-              ></Avatar>
-            </CardContent>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "start",
-                pl: 2,
-                pb: 1,
-              }}
-            >
-              <Typography
-                variant="subtitle1"
-                color="text.secondary"
-                component="div"
-              >
-                {totalMovie?.length}
-              </Typography>
-              <Typography
-                variant="subtitle1"
-                color="text.secondary"
-                component="div"
-              >
-                12+ ths Month
-              </Typography>
-            </Box>
-          </Box>
-        </Card>
+        <Suspense fallback={<div>Loading...</div>}>
+          <MovieCountCard />
+        </Suspense>
         <Card elevation={5} sx={{ display: "flex", minWidth: 270 }}>
           <Box sx={{ display: "flex", flexDirection: "column", width: "100%" }}>
             <CardContent

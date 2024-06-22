@@ -6,15 +6,20 @@ import ProgramForm from "@/components/programComponents/ProgramForm"
 import { getAdminData } from "@/actions/programActions"
 import Table from "@/components/programComponents/ProgramTable"
 import UpdateForm from "@/components/programComponents/UpdateForm"
+import { getServerSession } from "next-auth"
+import { redirect } from "next/navigation"
 
 const Program = async ({ searchParams }: any) => {
   const channels = await db.channel.findMany()
   const type = await db.type.findMany()
   const category = await db.category.findMany()
-  const data = await getAdminData(searchParams)
+
+  const session = await getServerSession()
+  console.log("setiion", session)
+  const data = await getAdminData(searchParams, session?.user.roleId as number)
 
   return (
-    <Paper sx={{ padding: 2 }}>
+    <Paper sx={{ padding: 1 }}>
       <Box sx={{ borderBottom: " solid 1px" }}>
         <ModalProvider>
           <PagesHeader />

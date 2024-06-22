@@ -19,3 +19,8 @@ export const programSchema = z.object({
 export const channelSchema = z.object({
   name: z.string().min(1, "name is required"),
 })
+
+export const roleSchema = z.object({
+  name: z.string().min(1, "name is required"),
+  permission: z.number(),
+})

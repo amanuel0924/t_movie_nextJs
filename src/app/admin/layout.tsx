@@ -11,6 +11,8 @@ import { LeafIcon, ChannelIcon, ProgramIcons } from "@/components/icons"
 import DashboaredSideLists from "@/components/adminComponets/DashboaredSideLists"
 import DashBoaredHeader from "@/components/adminComponets/DashBoaredHeader"
 import HeaderAvatar from "@/components/adminComponets/HeaderAvatar"
+// import { defineAbilitiesFor } from "@/db/reactCasl"
+// import { getServerSession } from "next-auth"
 
 interface DashboaredProps {
   children: React.ReactNode
@@ -38,9 +40,16 @@ const lists: SideListItem[] = [
     icon: <ProgramIcons />,
     path: "/admin/program",
   },
+  {
+    text: "Role",
+    icon: <ChannelIcon />,
+    path: "/admin/role",
+  },
 ]
 
 export default async function Dashboard({ children }: DashboaredProps) {
+  // const session = await getServerSession()
+  // const abilities = await defineAbilitiesFor(session?.user.roleId as number)
   return (
     <Box sx={{ display: "flex" }}>
       <AppBar
@@ -98,7 +107,10 @@ export default async function Dashboard({ children }: DashboaredProps) {
           </Typography>
         </Toolbar>
         <Divider />
-        <DashboaredSideLists lists={lists} />
+        <DashboaredSideLists
+          lists={lists}
+          // ability={abilities}
+        />
       </Drawer>
       <Box
         component="main"

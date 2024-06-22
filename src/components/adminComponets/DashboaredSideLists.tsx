@@ -1,21 +1,20 @@
 "use client"
-import {
-  Box,
-  Button,
-  Stack,
-  TextField,
-  Typography,
-  List,
-  ListItem,
-} from "@mui/material"
+import { List, ListItem } from "@mui/material"
 import ListItemButton from "@mui/material/ListItemButton"
 import ListItemIcon from "@mui/material/ListItemIcon"
 import ListItemText from "@mui/material/ListItemText"
 import { SideListItem } from "@/app/admin/layout"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import { AppAbility } from "@/db/reactCasl"
 
-function DashboaredSideLists({ lists }: { lists: SideListItem[] }) {
+function DashboaredSideLists({
+  lists,
+}: // ability,
+{
+  lists: SideListItem[]
+  // ability: AppAbility
+}) {
   const pathname = usePathname()
 
   return (

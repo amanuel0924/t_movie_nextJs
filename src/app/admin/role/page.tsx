@@ -2,15 +2,16 @@ import { Box, Paper } from "@mui/material"
 import PagesHeader from "@/components/PagesHeader"
 import { ModalProvider } from "@/components/channelComponents/ModalContext"
 import { db } from "@/db"
-import ProgramForm from "@/components/channelComponents/ChannelForm"
-import { getAdminData } from "@/actions/channelActions"
-import Table from "@/components/channelComponents/ChannelTable"
+import RoleForm from "@/components/roleComponents/RoleForm"
+import { getPermition } from "@/actions/userActions"
+import Table from "@/components/roleComponents/RoleTable"
 import UpdateForm from "@/components/channelComponents/UpdateForm"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
+import { Permission } from "@prisma/client"
 
-const Channel = async ({ searchParams }: any) => {
-  const data = await getAdminData(searchParams)
+const Role = async () => {
+  const data = (await getPermition()) ?? []
   const session = await getServerSession()
 
   if (!session) {
@@ -21,13 +22,12 @@ const Channel = async ({ searchParams }: any) => {
       <Box sx={{ borderBottom: " solid 1px" }}>
         <ModalProvider>
           <PagesHeader />
-          <Table {...data} />
-          <ProgramForm />
-          <UpdateForm />
+          {/* <Table {...data} /> */}
+          <RoleForm permission={data} />
         </ModalProvider>
       </Box>
     </Paper>
   )
 }
 
-export default Channel
+export default Role

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 export async function POST(req: Request) {
   try {
     const body = await req.json()
-    const { email, name, password } = body
+    const { email, name, password, roleId } = body
     //check if email exists
 
     const existingUser = await db.user.findFirst({
@@ -22,6 +22,7 @@ export async function POST(req: Request) {
 
     const newUser = await db.user.create({
       data: {
+        roleId,
         email,
         name,
         password,

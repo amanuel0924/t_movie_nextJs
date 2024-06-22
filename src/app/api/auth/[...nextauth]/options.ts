@@ -2,6 +2,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter" // Use the PrismaAdapter from next-auth
 import { db } from "@/db"
 import { NextAuthOptions } from "next-auth"
+import type { User } from "@prisma/client"
 
 export const options: NextAuthOptions = {
   pages: {
@@ -38,6 +39,7 @@ export const options: NextAuthOptions = {
           id: user.id,
           name: user.name,
           email: user.email,
+          roleId: user.roleId,
         }
       },
     }),
@@ -45,14 +47,22 @@ export const options: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        return { ...token, id: user.id, name: user.name, email: user.email }
+        return {
+          ...token,
+          roleId: user.roleId,
+          id: user.id,
+        }
       }
       return token
     },
-    async session({ session, user, token }) {
+    async session({ session, token }) {
       return {
         ...session,
-        user: { id: token.id, name: token.name, email: token.email },
+        user: {
+          ...session.user,
+          roleId: token.roleId,
+          id: token.id,
+        },
       }
     },
   },
