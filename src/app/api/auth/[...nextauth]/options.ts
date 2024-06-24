@@ -20,7 +20,6 @@ export const options: NextAuthOptions = {
         if (!credentials?.email || !credentials.password) {
           return null
         }
-
         const user = await db.user.findFirst({
           where: { email: credentials.email },
         })

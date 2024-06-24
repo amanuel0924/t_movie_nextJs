@@ -8,14 +8,16 @@ import Table from "@/components/channelComponents/ChannelTable"
 import UpdateForm from "@/components/channelComponents/UpdateForm"
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
+import { options } from "@/app/api/auth/[...nextauth]/options"
 
 const Channel = async ({ searchParams }: any) => {
-  const data = await getAdminData(searchParams)
-  const session = await getServerSession()
+  const session = await getServerSession(options)
 
   if (!session) {
     redirect("/login")
   }
+  console.log("setssion", session)
+  const data = await getAdminData(searchParams, session?.user as any)
   return (
     <Paper sx={{ padding: 2 }}>
       <Box sx={{ borderBottom: " solid 1px" }}>

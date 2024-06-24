@@ -23,7 +23,7 @@ const MyChart = dynamic(() => import("@/components/adminComponets/PieChart"), {
 })
 const Overview = async () => {
   const categoryMoviecount: MovieCount[] = await getCategoryMovieCounts()
-  const totalMovie: Movie[] = await getUserData()
+  // const totalMovie: Movie[] = await getUserData()
   const session = await getServerSession()
 
   if (!session) {

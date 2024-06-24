@@ -10,9 +10,7 @@ import { getServerSession } from "next-auth"
 
 const PagesHeader = async () => {
   const session = await getServerSession(options)
-  // const abilities = await defineAbilitiesForReact(
-  //   session?.user.roleId as number
-  // )
+
   console.log("fromHeader", session)
   const abilities = await defineAbilitiesFor(session?.user.roleId as number)
 
@@ -77,7 +75,7 @@ const PagesHeader = async () => {
           Add Filter
         </Button>
 
-        {abilities?.can("create", "Movie") && <PageHeaderButton />}
+        <PageHeaderButton />
       </Grid>
     </Grid>
   )

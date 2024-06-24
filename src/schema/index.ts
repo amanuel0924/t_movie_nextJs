@@ -22,5 +22,5 @@ export const channelSchema = z.object({
 
 export const roleSchema = z.object({
   name: z.string().min(1, "name is required"),
-  permission: z.number(),
+  permission: z.array(z.number().int()).min(1, "permission is required"),
 })

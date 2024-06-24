@@ -9,17 +9,44 @@ import {
   Stack,
   FormHelperText,
 } from "@mui/material"
+import { createData } from "@/actions/userActions"
+import { useSession } from "next-auth/react"
+import type { Permission } from "@prisma/client"
+import * as React from "react"
+import OutlinedInput from "@mui/material/OutlinedInput"
 import InputLabel from "@mui/material/InputLabel"
 import MenuItem from "@mui/material/MenuItem"
 import FormControl from "@mui/material/FormControl"
-import { createData } from "@/actions/userActions"
-import { useSession } from "next-auth/react"
-import Select from "@mui/material/Select"
-import type { Permission } from "@prisma/client"
+import ListItemText from "@mui/material/ListItemText"
+import Select, { SelectChangeEvent } from "@mui/material/Select"
+import Checkbox from "@mui/material/Checkbox"
+
+const ITEM_HEIGHT = 48
+const ITEM_PADDING_TOP = 8
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+}
+const names = [
+  "Oliver Hansen",
+  "Van Henry",
+  "April Tucker",
+  "Ralph Hubbard",
+  "Omar Alexander",
+  "Carlos Abbott",
+  "Miriam Wagner",
+  "Bradley Wilkerson",
+  "Virginia Andrews",
+  "Kelly Snyder",
+]
 
 const style = {
   position: "absolute",
-  top: "38%",
+  top: "45%",
   left: "50%",
   transform: "translate(-50%, -50%)",
   width: 600,
@@ -32,7 +59,16 @@ const style = {
 const RoleForm = ({ permission }: { permission: Permission[] }) => {
   //   const { isModalOpen, closeModal } = useContext(ModalContext)
   const { data: session, status } = useSession()
-  const [formState, action] = useFormState(createData, { errors: {} })
+  const [permissions, setPermissions] = React.useState<string[]>([])
+  const [formState, action] = useFormState(createData, {
+    errors: {},
+  })
+  const handleChange = (event: SelectChangeEvent<typeof permissions>) => {
+    const {
+      target: { value },
+    } = event
+    setPermissions(typeof value === "string" ? value.split(",") : value)
+  }
 
   return (
     // <Modal
@@ -62,24 +98,25 @@ const RoleForm = ({ permission }: { permission: Permission[] }) => {
               helperText={formState.errors.name?.join(", ")}
             />
 
-            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-              <InputLabel id="demo-select-small-label-chnnel-type">
-                Permition
-              </InputLabel>
+            <FormControl sx={{ m: 1, width: 300 }}>
+              <InputLabel id="demo-multiple-checkbox-label">Tag</InputLabel>
               <Select
-                labelId="demo-select-small-label-type"
-                id="demo-select-small-chneel-type"
-                label=" Permition"
+                labelId="demo-multiple-checkbox-label"
+                id="demo-multiple-checkbox"
+                multiple
+                value={permissions}
                 name="permission"
-                defaultValue=""
-                error={!!formState.errors.permission}
+                onChange={handleChange}
+                input={<OutlinedInput label="Tag" />}
+                renderValue={(selected) => selected.join(", ")}
+                MenuProps={MenuProps}
               >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
                 {permission?.map((per) => (
-                  <MenuItem key={per.id} value={per.id}>
-                    {per.id}
+                  <MenuItem key={per.id} value={per.id.toString()}>
+                    <Checkbox
+                      checked={permissions.indexOf(per.id.toString()) > -1}
+                    />
+                    <ListItemText primary={per.name} />
                   </MenuItem>
                 ))}
               </Select>

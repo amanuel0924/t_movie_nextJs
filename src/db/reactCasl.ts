@@ -1,4 +1,4 @@
-import { User, Movie, Role, Permission, Prisma } from "@prisma/client"
+import { User, Movie, Role, Permission, Prisma, Channel } from "@prisma/client"
 import { PureAbility, AbilityBuilder, subject } from "@casl/ability"
 import {
   createPrismaAbility,
@@ -7,6 +7,7 @@ import {
   Subjects,
 } from "@casl/prisma"
 import { db } from "@/db"
+import { parseCondition } from "@/utils/conditionParser"
 
 export type AppAbility = PureAbility<
   [
@@ -16,6 +17,7 @@ export type AppAbility = PureAbility<
       | Subjects<{
           User: User
           Movie: Movie
+          Channel: Channel
         }>
     )
   ],
@@ -26,31 +28,49 @@ const { can, cannot, build } = new AbilityBuilder<AppAbility>(
   createPrismaAbility
 )
 
-export async function defineAbilitiesFor(role: number) {
+export async function defineAbilitiesFor(role: number, id: any) {
   try {
-    let permissions: Permission[] = await db.permission.findMany()
+    let roles = await db.role.findFirst({
+      where: {
+        id: role,
+      },
+      include: {
+        Permissions: true,
+      },
+    })
+
+    const permissions = roles?.Permissions
 
     if (!permissions) {
       return build()
     }
-
-    permissions = permissions.filter((permission) => permission.roleId === role)
-
-    console.log(permissions)
-
+    console.log("permissions", permissions)
     for (const permission of permissions) {
       if (permission.inverted) {
         if (permission.condition) {
-          cannot(
-            permission.action,
-            permission.subject as any,
-            permission.condition as any
+          console.log("condition", JSON.stringify(permission.condition))
+          const condition = parseCondition(
+            JSON.stringify(permission.condition),
+            id
           )
+
+          console.log("condition from cant 11111111", condition)
+          cannot(permission.action, permission.subject as any, condition as any)
         } else {
           cannot(permission.action, permission.subject as any)
         }
       } else {
-        can(permission.action, permission.subject as any)
+        if (permission.condition) {
+          console.log("condition", JSON.stringify(permission.condition))
+          const condition = parseCondition(
+            JSON.stringify(permission.condition),
+            id
+          )
+          console.log("condition can 22222222", condition)
+          can(permission.action, permission.subject as any, condition as any)
+        } else {
+          can(permission.action, permission.subject as any)
+        }
       }
     }
 

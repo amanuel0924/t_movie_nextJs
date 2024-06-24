@@ -3,7 +3,7 @@ import PagesHeader from "@/components/PagesHeader"
 import { ModalProvider } from "@/components/channelComponents/ModalContext"
 import { db } from "@/db"
 import RoleForm from "@/components/roleComponents/RoleForm"
-import { getPermition } from "@/actions/userActions"
+import { getPermission } from "@/actions/userActions"
 import Table from "@/components/roleComponents/RoleTable"
 import UpdateForm from "@/components/channelComponents/UpdateForm"
 import { getServerSession } from "next-auth"
@@ -11,7 +11,7 @@ import { redirect } from "next/navigation"
 import { Permission } from "@prisma/client"
 
 const Role = async () => {
-  const data = (await getPermition()) ?? []
+  const data = (await getPermission()) ?? []
   const session = await getServerSession()
 
   if (!session) {

@@ -10,13 +10,12 @@ export const getSingleUser = async (id: string) => {
   })
 }
 
-export const getPermition = async () => {
+export const getPermission = async () => {
   try {
     const permission = await db.permission.findMany()
     if (!permission) {
       return []
     } else {
-      console.log(permission)
       return permission
     }
   } catch (error) {
@@ -38,8 +37,10 @@ export const createData = async (
 ): Promise<CreateFormStateType> => {
   const result = roleSchema.safeParse({
     name: formData.get("name") as string,
-    permission: Number(formData.get("permission")),
+    permission: (formData.get("permission") as string).split(",").map(Number),
   })
+
+  console.log("llllllllllllllllllllll000000000000000", result)
 
   if (!result.success) {
     return {
@@ -49,7 +50,12 @@ export const createData = async (
 
   try {
     await db.role.create({
-      data: result.data,
+      data: {
+        name: result.data.name,
+        Permissions: {
+          connect: result.data.permission.map((id) => ({ id })),
+        },
+      },
     })
   } catch (error: unknown) {
     if (error instanceof Error) {

@@ -2,10 +2,10 @@
 import { db } from "@/db"
 import { channelSchema } from "@/schema"
 import { revalidatePath } from "next/cache"
-import { createFilterCondition } from "@/utils/queryGenerator"
 import { mergeFilterfn, mergeFilterDatatype } from "@/utils/tableUtils"
-import { getAdminDataForAll } from "./sharedAction"
 import { createWhereClause } from "./sharedAction"
+import { defineAbilitiesFor } from "@/db/reactCasl"
+import { accessibleBy } from "@casl/prisma"
 
 interface CreateFormStateType {
   errors: {
@@ -37,7 +37,10 @@ type GlobalFilter = {
 // export const getAdminData = async (urlquery: GetAdminDataQuery) => {
 //   return getAdminDataForAll(urlquery, db.channel)
 // }
-export const getAdminData = async (urlquery: GetAdminDataQuery) => {
+export const getAdminData = async (
+  urlquery: GetAdminDataQuery,
+  role: number
+) => {
   const {
     start,
     size,
@@ -58,6 +61,8 @@ export const getAdminData = async (urlquery: GetAdminDataQuery) => {
   let query = { ...parsedFilters }
   query = mergeFilterfn(parsedFilters, columnFilterFns)
   query = mergeFilterDatatype(query, customVariantsTypesObj)
+  const abilities = await defineAbilitiesFor(role)
+  console.log(abilities)
 
   console.log("filter", query)
 
@@ -65,7 +70,9 @@ export const getAdminData = async (urlquery: GetAdminDataQuery) => {
 
   try {
     const data = await db.channel.findMany({
-      where,
+      where: {
+        AND: [accessibleBy(abilities).Channel, { ...where }],
+      },
       orderBy: parsedSorting,
       skip: start ? parseInt(start) : 0,
       take: size ? parseInt(size) : 10,

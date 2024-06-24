@@ -1,5 +1,25 @@
 import { PrismaClient } from "@prisma/client"
 
+const prismaClientSingleton = () => {
+  return new PrismaClient()
+}
+// const prismaClientSingleton = () => {
+//   return new PrismaClient()
+// }
+
+declare const globalThis: {
+  prismaGlobal: ReturnType<typeof prismaClientSingleton>
+} & typeof global
+// declare const globalThis: {
+//   prismaGlobal: ReturnType<typeof prismaClientSingleton>
+// } & typeof global
+
+const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
+if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = prisma
+export const db = prisma
+// const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
+// if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = prisma
+
 // type AppAbility = PureAbility<
 //   [
 //     string,
@@ -43,5 +63,3 @@ import { PrismaClient } from "@prisma/client"
 //     return new PureAbility()
 //   }
 // }
-
-export const db = new PrismaClient()

@@ -6,12 +6,15 @@
 
 generator client {
   provider = "prisma-client-js"
+  priviewFeatures = ["filterJson"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+
 
 model Movie {
   id          Int      @id @default(autoincrement())
@@ -59,7 +62,8 @@ model Role {
   updatedAt  DateTime     @updatedAt
 
   Users      User[]
-  Permissions Permission[]
+  Permissions Permission[] @relation("RolePermissions")
+  RolePermissions RolePermission[]
 }
 
 model Permission {
@@ -73,7 +77,19 @@ model Permission {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Roles      Role[] 
+  Roles      Role[] @relation("RolePermissions")
+  RolePermissions RolePermission[]
+}
+
+model RolePermission {
+  roleId       Int
+  permissionId Int
+
+  Role        Role       @relation(fields: [roleId], references: [id])
+  Permission  Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@unique([roleId, permissionId])
 }
 model User {
   id        String   @id @default(uuid())
@@ -86,3 +102,4 @@ model User {
   updatedAt DateTime @updatedAt
   Movie     Movie[]
 }
+

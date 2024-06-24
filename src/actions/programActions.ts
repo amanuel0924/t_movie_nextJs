@@ -2,13 +2,11 @@
 import { db } from "@/db"
 import { programSchema } from "@/schema"
 import { revalidatePath } from "next/cache"
-import { createFilterCondition } from "@/utils/queryGenerator"
 import { mergeFilterfn, mergeFilterDatatype } from "@/utils/tableUtils"
 import { createWhereClause } from "./sharedAction"
-
+import { createPrismaAbility } from "@casl/prisma"
 import { defineAbilitiesFor } from "@/db/reactCasl"
-import { packRules } from "@casl/ability/extra"
-import { accessibleBy, createPrismaAbility } from "@casl/prisma"
+import { accessibleBy } from "@casl/prisma"
 import { User } from "@prisma/client"
 
 interface CreateFormStateType {
@@ -37,7 +35,10 @@ type GetAdminDataQuery = {
 
 export const getAdminData = async (
   urlquery: GetAdminDataQuery,
-  role: number
+  user: User & {
+    roleId: number
+    id: string
+  }
 ) => {
   const {
     start,
@@ -61,8 +62,8 @@ export const getAdminData = async (
   query = mergeFilterDatatype(query, customVariantsTypesObj)
 
   const where = await createWhereClause(query, parsedGlobalFilter)
-  const abilities = await defineAbilitiesFor(role)
-  console.log(abilities)
+
+  const abilities = await defineAbilitiesFor(user.roleId, user.id)
 
   try {
     const data = await db.movie.findMany({
@@ -127,17 +128,28 @@ export const toglerStatus = async (id: number) => {
 }
 
 export const getCategoryMovieCounts = async () => {
-  const categoryCounts = await db.movie.groupBy({
-    by: ["categoryId"],
-    _count: {
-      id: true,
-    },
-  })
-  return categoryCounts
+  try {
+    const categoryCounts = await db.movie.groupBy({
+      by: ["categoryId"],
+      _count: {
+        id: true,
+      },
+    })
+    return categoryCounts
+  } catch (error: unknown) {
+    console.log(error)
+    return []
+  }
 }
 
 export const getUserData = async () => {
-  return await db.movie.findMany()
+  try {
+    return await db.movie.findMany()
+  } catch (error: unknown) {
+    console.log(error)
+  } finally {
+    db.$disconnect()
+  }
 }
 
 export const createData = async (
@@ -204,12 +216,6 @@ export const updateData = async (
   formState: CreateFormStateType,
   formData: FormData
 ): Promise<CreateFormStateType> => {
-  const abilit = await defineAbilitiesFor(role)
-  if (!abilit?.can("update", "Movie")) {
-    return {
-      errors: { _form: ["not allowed"] },
-    }
-  }
   const result = programSchema.safeParse({
     title: formData.get("title") as string,
     channelId: Number(formData.get("channel")),
@@ -278,14 +284,17 @@ export const getChannels = async () => {
     const channel = await db.channel.findMany()
     return channel
   } catch (error: unknown) {
-    return null
+    console.log(error)
+    return []
   }
 }
 export const getTypes = async () => {
   try {
     const types = await db.type.findMany()
+    return types
   } catch (error: unknown) {
-    return null
+    console.log(error)
+    return []
   }
 }
 
@@ -294,6 +303,7 @@ export const getCategories = async () => {
     const categories = await db.category.findMany()
     return categories
   } catch (error: unknown) {
-    return null
+    console.log(error)
+    return []
   }
 }
