@@ -6,6 +6,7 @@ import { mergeFilterfn, mergeFilterDatatype } from "@/utils/tableUtils"
 import { createWhereClause } from "./sharedAction"
 import { defineAbilitiesFor } from "@/db/reactCasl"
 import { accessibleBy } from "@casl/prisma"
+import { User } from "@prisma/client"
 
 interface CreateFormStateType {
   errors: {
@@ -39,7 +40,10 @@ type GlobalFilter = {
 // }
 export const getAdminData = async (
   urlquery: GetAdminDataQuery,
-  role: number
+  user: User & {
+    roleId: number
+    id: string
+  }
 ) => {
   const {
     start,
@@ -61,7 +65,7 @@ export const getAdminData = async (
   let query = { ...parsedFilters }
   query = mergeFilterfn(parsedFilters, columnFilterFns)
   query = mergeFilterDatatype(query, customVariantsTypesObj)
-  const abilities = await defineAbilitiesFor(role)
+  const abilities = await defineAbilitiesFor(user.roleId, user.id)
   console.log(abilities)
 
   console.log("filter", query)

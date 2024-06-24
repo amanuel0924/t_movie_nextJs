@@ -20,7 +20,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 import { DatePicker } from "@mui/x-date-pickers/DatePicker"
 import { useContext } from "react"
 import { ModalContext } from "@/components/programComponents/ModalContext"
-import type { Channel, Category, Type, Movie } from "@prisma/client"
+import type { Channel, Category, Type, Movie, User } from "@prisma/client"
 import { updateData } from "@/actions/programActions"
 import { useSession } from "next-auth/react"
 
@@ -50,7 +50,11 @@ const UpdateForm = ({ channels, categorys, types }: ProgramFormProps) => {
   const { data: session, status } = useSession()
 
   const [formState, action] = useFormState(
-    updateData.bind(null, moviesData.id, session?.user?.roleId as number),
+    updateData.bind(
+      null,
+      moviesData.id,
+      session?.user as User & { id: string }
+    ),
     {
       errors: {},
     }

@@ -12,7 +12,6 @@ import {
 import Table from "@/components/programComponents/ProgramTable"
 import UpdateForm from "@/components/programComponents/UpdateForm"
 import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
 import { options } from "@/app/api/auth/[...nextauth]/options"
 
 const Program = async ({ searchParams }: any) => {

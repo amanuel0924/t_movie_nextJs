@@ -44,7 +44,7 @@ export async function defineAbilitiesFor(role: number, id?: any) {
     if (!permissions) {
       return build()
     }
-    console.log("permissions", permissions)
+
     for (const permission of permissions) {
       if (permission.inverted) {
         if (permission.condition) {

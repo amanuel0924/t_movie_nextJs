@@ -12,7 +12,6 @@ import { options } from "@/app/api/auth/[...nextauth]/options"
 
 const Channel = async ({ searchParams }: any) => {
   const session = await getServerSession(options)
-
   if (!session) {
     redirect("/login")
   }

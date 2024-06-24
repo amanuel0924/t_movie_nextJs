@@ -8,6 +8,7 @@ import { createPrismaAbility } from "@casl/prisma"
 import { defineAbilitiesFor } from "@/db/reactCasl"
 import { accessibleBy } from "@casl/prisma"
 import { User } from "@prisma/client"
+import { subject } from "@casl/ability"
 
 interface CreateFormStateType {
   errors: {
@@ -212,7 +213,10 @@ export const createData = async (
 
 export const updateData = async (
   id: number,
-  role: number,
+  user: User & {
+    roleId: number
+    id: string
+  },
   formState: CreateFormStateType,
   formData: FormData
 ): Promise<CreateFormStateType> => {
@@ -234,8 +238,24 @@ export const updateData = async (
       errors: result.error.flatten().fieldErrors,
     }
   }
-
   try {
+    const abilit = await defineAbilitiesFor(user.roleId, user.id)
+    const movie = await db.movie.findUnique({
+      where: {
+        id,
+      },
+    })
+    if (!movie) {
+      return {
+        errors: { _form: ["not found"] },
+      }
+    }
+    if (!abilit.can("update", subject("Movie", { ...movie }))) {
+      return {
+        errors: { _form: ["not allowed"] },
+      }
+    }
+
     await db.movie.update({
       where: {
         id,
@@ -260,10 +280,22 @@ export const updateData = async (
   }
 }
 
-export const deleteData = async (id: number, role: number) => {
-  const abilit = await defineAbilitiesFor(role)
-
-  if (abilit?.can("delete", "Movie")) {
+export const deleteData = async (
+  id: number,
+  user: User & {
+    roleId: number
+    id: string
+  }
+) => {
+  const Movie = await db.movie.findUnique({
+    where: {
+      id,
+    },
+  })
+  if (!Movie) return null
+  const abilit = await defineAbilitiesFor(user.roleId, user.id)
+  if (abilit?.can("delete", subject("Movie", { ...Movie }))) {
+    console.log("allowed")
     await db.movie.delete({
       where: {
         id,
