@@ -24,6 +24,8 @@ import UpdateButton from "./UpdateButton"
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { MRT_Row } from "material-react-table"
 
+// const abilities = await defineAbilitiesFor(session?.user.roleId as number)
+
 type Movie = {
   id: number
   title: string | null
@@ -85,6 +87,7 @@ const Example = (datas: dataResponseProp) => {
   const searchParams = useSearchParams()
   const pathName = usePathname()
   const { replace } = useRouter()
+  const [ability, setAbility] = useState<any>(null)
 
   const columns = useMemo<MRT_ColumnDef<Movie>[]>(
     () => [
@@ -160,6 +163,7 @@ const Example = (datas: dataResponseProp) => {
         Cell: ({ row }: { row: MRT_Row<Movie> }) => (
           <div>
             <UpdateButton data={row.original} />
+
             <DeleteButton id={row.original.id} />
           </div>
         ),
@@ -168,9 +172,10 @@ const Example = (datas: dataResponseProp) => {
     []
   )
 
+  // const abilities = await defineAbilitiesFor(session?.user.roleId as number)
+
   useEffect(() => {
     const fetchURL = new URLSearchParams(searchParams)
-
     fetchURL.set("start", `${pagination.pageIndex * pagination.pageSize}`)
     fetchURL.set("size", `${pagination.pageSize}`)
     fetchURL.set("filtersFns", JSON.stringify(columnFilterFns ?? []))

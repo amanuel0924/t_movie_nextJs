@@ -74,8 +74,7 @@ const PagesHeader = async () => {
         >
           Add Filter
         </Button>
-
-        <PageHeaderButton />
+        {abilities.can("create", "Movie") && <PageHeaderButton />}
       </Grid>
     </Grid>
   )

@@ -18,6 +18,7 @@ export type AppAbility = PureAbility<
           User: User
           Movie: Movie
           Channel: Channel
+          Role: Role
         }>
     )
   ],
@@ -53,8 +54,6 @@ export async function defineAbilitiesFor(role: number, id?: any) {
             JSON.stringify(permission.condition),
             id
           )
-
-          console.log("condition from cant 11111111", condition)
           cannot(permission.action, permission.subject as any, condition as any)
         } else {
           cannot(permission.action, permission.subject as any)
@@ -66,7 +65,6 @@ export async function defineAbilitiesFor(role: number, id?: any) {
             JSON.stringify(permission.condition),
             id
           )
-          console.log("condition can 22222222", condition)
           can(permission.action, permission.subject as any, condition as any)
         } else {
           can(permission.action, permission.subject as any)
