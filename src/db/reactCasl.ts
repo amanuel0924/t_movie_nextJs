@@ -28,7 +28,7 @@ const { can, cannot, build } = new AbilityBuilder<AppAbility>(
   createPrismaAbility
 )
 
-export async function defineAbilitiesFor(role: number, id: any) {
+export async function defineAbilitiesFor(role: number, id?: any) {
   try {
     let roles = await db.role.findFirst({
       where: {
