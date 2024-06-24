@@ -24,7 +24,7 @@ const MovieCountCard = () => {
 
   const handleServerAction = async () => {
     try {
-      const data: Movie = await getUserData()
+      const data: Movie = (await getUserData()) ?? []
       setData(data)
       console.log("onDataChange acction emiited")
     } catch (error) {
