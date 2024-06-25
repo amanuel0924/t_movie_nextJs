@@ -1,5 +1,5 @@
 "use client"
-import { useMemo, useState, useEffect } from "react"
+import { useMemo, useState, useEffect, use } from "react"
 import {
   MRT_ColumnFilterFnsState,
   MaterialReactTable,
@@ -23,8 +23,7 @@ import DeleteButton from "./DeleteButton"
 import UpdateButton from "./UpdateButton"
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { MRT_Row } from "material-react-table"
-
-// const abilities = await defineAbilitiesFor(session?.user.roleId as number)
+import { useSession } from "next-auth/react"
 
 type Movie = {
   id: number
@@ -55,6 +54,8 @@ const Example = (datas: dataResponseProp) => {
     pageIndex: 0,
     pageSize: 10,
   })
+  const { data: session } = useSession()
+
   const [columnFilterFns, setColumnFilterFns] =
     useState<MRT_ColumnFilterFnsState>({
       id: "equals",
@@ -87,7 +88,6 @@ const Example = (datas: dataResponseProp) => {
   const searchParams = useSearchParams()
   const pathName = usePathname()
   const { replace } = useRouter()
-  const [ability, setAbility] = useState<any>(null)
 
   const columns = useMemo<MRT_ColumnDef<Movie>[]>(
     () => [
@@ -172,7 +172,7 @@ const Example = (datas: dataResponseProp) => {
     []
   )
 
-  // const abilities = await defineAbilitiesFor(session?.user.roleId as number)
+  //
 
   useEffect(() => {
     const fetchURL = new URLSearchParams(searchParams)
@@ -230,6 +230,8 @@ const Example = (datas: dataResponseProp) => {
 //Date Picker Imports - these should just be in your Context Provider
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
+import { AppAbility, defineAbilitiesFor } from "@/db/reactCasl"
+import { User } from "@prisma/client"
 
 const ExampleWithLocalizationProvider = (data: dataResponseProp) => (
   <LocalizationProvider dateAdapter={AdapterDayjs}>

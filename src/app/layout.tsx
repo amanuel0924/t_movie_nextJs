@@ -4,6 +4,7 @@ import "./globals.css"
 import ThemeRegistery from "./theme/ThemeRegistery"
 import SesstionProvider from "@/utils/SessionProvider"
 import { getServerSession } from "next-auth"
+import AblityProvider from "@/utils/AblityContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,9 +22,11 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <SesstionProvider session={session}>
+        {/* <AblityProvider> */}
         <ThemeRegistery>
           <body className={inter.className}>{children}</body>
         </ThemeRegistery>
+        {/* </AblityProvider> */}
       </SesstionProvider>
     </html>
   )

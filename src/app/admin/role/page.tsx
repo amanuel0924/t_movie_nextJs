@@ -17,6 +17,7 @@ const Role = async () => {
   if (!session) {
     redirect("/login")
   }
+
   return (
     <Paper sx={{ padding: 2 }}>
       <Box sx={{ borderBottom: " solid 1px" }}>

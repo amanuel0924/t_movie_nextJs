@@ -9,6 +9,8 @@ import { defineAbilitiesFor } from "@/db/reactCasl"
 import { accessibleBy } from "@casl/prisma"
 import { User } from "@prisma/client"
 import { subject } from "@casl/ability"
+import { permittedFieldsOf } from "@casl/ability/extra"
+import pick from "lodash/pick"
 
 interface CreateFormStateType {
   errors: {
@@ -238,6 +240,7 @@ export const updateData = async (
       errors: result.error.flatten().fieldErrors,
     }
   }
+
   try {
     const abilit = await defineAbilitiesFor(user.roleId, user.id)
     const movie = await db.movie.findUnique({
@@ -250,17 +253,31 @@ export const updateData = async (
         errors: { _form: ["not found"] },
       }
     }
+    const ARTICLE_FIELDS = ["title", "description", "duration", "channel"]
+    const options: { fieldsFrom: (rule: any) => string[] } = {
+      fieldsFrom: (rule) => rule.fields || ARTICLE_FIELDS,
+    }
+
+    let fields = permittedFieldsOf(
+      abilit,
+      "update",
+      subject("Movie", { ...movie }),
+      options
+    )
+    const rawData = pick(result.data, fields)
+
     if (!abilit.can("update", subject("Movie", { ...movie }))) {
       return {
         errors: { _form: ["not allowed"] },
       }
     }
 
+    console.log(rawData)
     await db.movie.update({
       where: {
         id,
       },
-      data: result.data,
+      data: rawData,
     })
   } catch (error: unknown) {
     if (error instanceof Error) {

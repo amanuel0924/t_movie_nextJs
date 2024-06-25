@@ -20,6 +20,7 @@ import FormControl from "@mui/material/FormControl"
 import ListItemText from "@mui/material/ListItemText"
 import Select, { SelectChangeEvent } from "@mui/material/Select"
 import Checkbox from "@mui/material/Checkbox"
+import { AppAbility, defineAbilitiesFor } from "@/db/reactCasl"
 
 const ITEM_HEIGHT = 48
 const ITEM_PADDING_TOP = 8
@@ -56,7 +57,13 @@ const style = {
   p: 2,
 }
 
-const RoleForm = ({ permission }: { permission: Permission[] }) => {
+const RoleForm = ({
+  permission,
+}: // ablity,
+{
+  permission: Permission[]
+  // ablity: AppAbility
+}) => {
   //   const { isModalOpen, closeModal } = useContext(ModalContext)
   const { data: session, status } = useSession()
   const [permissions, setPermissions] = React.useState<string[]>([])
@@ -69,6 +76,8 @@ const RoleForm = ({ permission }: { permission: Permission[] }) => {
     } = event
     setPermissions(typeof value === "string" ? value.split(",") : value)
   }
+
+  // console.log(ablity)
 
   return (
     // <Modal

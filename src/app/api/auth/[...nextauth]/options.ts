@@ -22,6 +22,7 @@ export const options: NextAuthOptions = {
         }
         const user = await db.user.findFirst({
           where: { email: credentials.email },
+          include: { role: true },
         })
 
         console.log(user)

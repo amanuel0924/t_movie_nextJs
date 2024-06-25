@@ -70,6 +70,7 @@ model Permission {
   inverted  Boolean  @default(false)
   condition Json?
   reason    String?
+  fields    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
