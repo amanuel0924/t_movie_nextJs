@@ -4,7 +4,7 @@ import "./globals.css"
 import ThemeRegistery from "./theme/ThemeRegistery"
 import SesstionProvider from "@/utils/SessionProvider"
 import { getServerSession } from "next-auth"
-import AblityProvider from "@/utils/AblityContext"
+// import AblityProvider from "@/utils/AblityContext"
 
 const inter = Inter({ subsets: ["latin"] })
 

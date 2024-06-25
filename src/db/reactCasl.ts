@@ -1,4 +1,3 @@
-"use server"
 import { User, Movie, Role, Permission, Prisma, Channel } from "@prisma/client"
 import {
   PureAbility,
@@ -14,6 +13,7 @@ import {
 } from "@casl/prisma"
 import { db } from "@/db"
 import { parseCondition } from "@/utils/conditionParser"
+import { getRole } from "@/actions/userActions"
 
 export type AppAbility = PureAbility<
   [
@@ -28,14 +28,7 @@ const { can, cannot, build } = new AbilityBuilder<AppAbility>(
 )
 export async function defineAbilitiesFor(role: number, id?: any) {
   try {
-    let roles = await db.role.findFirst({
-      where: {
-        id: role,
-      },
-      include: {
-        Permissions: true,
-      },
-    })
+    let roles = await getRole(role)
 
     const permissions = roles?.Permissions || []
 

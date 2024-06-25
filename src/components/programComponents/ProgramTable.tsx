@@ -24,19 +24,21 @@ import UpdateButton from "./UpdateButton"
 import { useSearchParams, usePathname, useRouter } from "next/navigation"
 import { MRT_Row } from "material-react-table"
 import { useSession } from "next-auth/react"
+import { Movie } from "@prisma/client"
 
-type Movie = {
-  id: number
-  title: string | null
-  duration: number
-  description: string
-  status: boolean
-  channelId: number
-  typeId: number
-  categoryId: number
-  videoUrl: string | null
-  released: Date
-}
+// type Movie = {
+//   id: number
+//   title: string | null
+//   duration: number
+//   description: string
+//   status: boolean
+//   channelId: number
+//   typeId: number
+//   categoryId: number
+//   videoUrl: string | null
+//   released: Date
+//   c
+// }
 
 type dataResponseProp = {
   data: Array<Movie>
@@ -89,6 +91,19 @@ const Example = (datas: dataResponseProp) => {
   const pathName = usePathname()
   const { replace } = useRouter()
 
+  const [ablity, setAbility] = useState<AppAbility>()
+  console.log(ablity?.rules, "rulre.......................")
+  useEffect(() => {
+    const getAbility = async () => {
+      const abilities = await defineAbilitiesFor(
+        session?.user.roleId as number,
+        session?.user.id as string
+      )
+      console.log(abilities.rules, "abilities")
+      setAbility(abilities)
+    }
+    getAbility()
+  }, [session?.user.roleId, session?.user.id])
   const columns = useMemo<MRT_ColumnDef<Movie>[]>(
     () => [
       {
@@ -160,16 +175,28 @@ const Example = (datas: dataResponseProp) => {
         header: "Actions",
         size: 50,
         enableColumnFilter: false,
-        Cell: ({ row }: { row: MRT_Row<Movie> }) => (
-          <div>
-            <UpdateButton data={row.original} />
+        Cell: ({ row }: { row: MRT_Row<Movie> }) => {
+          const updatedData = {
+            ...row.original,
+          }
+          return (
+            <div>
+              {ablity?.can(
+                "update",
+                subject("Movie", { ...(updatedData as Movie) })
+              ) ? (
+                <UpdateButton data={row.original} />
+              ) : null}
 
-            <DeleteButton id={row.original.id} />
-          </div>
-        ),
+              {ablity?.can("delete", "Movie") ? (
+                <DeleteButton id={row.original.id} />
+              ) : null}
+            </div>
+          )
+        },
       },
     ],
-    []
+    [ablity]
   )
 
   //
@@ -232,6 +259,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs"
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider"
 import { AppAbility, defineAbilitiesFor } from "@/db/reactCasl"
 import { User } from "@prisma/client"
+import { subject } from "@casl/ability"
 
 const ExampleWithLocalizationProvider = (data: dataResponseProp) => (
   <LocalizationProvider dateAdapter={AdapterDayjs}>

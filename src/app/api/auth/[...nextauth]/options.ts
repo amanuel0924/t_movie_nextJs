@@ -2,7 +2,6 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@next-auth/prisma-adapter" // Use the PrismaAdapter from next-auth
 import { db } from "@/db"
 import { NextAuthOptions } from "next-auth"
-import type { User } from "@prisma/client"
 
 export const options: NextAuthOptions = {
   pages: {
@@ -22,10 +21,15 @@ export const options: NextAuthOptions = {
         }
         const user = await db.user.findFirst({
           where: { email: credentials.email },
-          include: { role: true },
+          include: {
+            role: {
+              include: {
+                Permissions: true,
+              },
+            },
+          },
         })
-
-        console.log(user)
+        console.log("------------------------------------------------", user)
 
         if (!user) {
           return null

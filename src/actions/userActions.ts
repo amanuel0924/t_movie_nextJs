@@ -119,3 +119,22 @@ export const getUserByemail = async (email: string) => {
     },
   })
 }
+// let roles = await db.role.findFirst({
+//   where: {
+//     id: role,
+//   },
+//   include: {
+//     Permissions: true,
+//   },
+// })
+
+export const getRole = async (id: number) => {
+  return await db.role.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      Permissions: true,
+    },
+  })
+}
