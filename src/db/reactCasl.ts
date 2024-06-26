@@ -46,14 +46,12 @@ export async function defineAbilitiesFor(role: number, id?: any) {
             condition as any
           )
         } else if (permission.condition) {
-          console.log("condition", JSON.stringify(permission.condition))
           const condition = parseCondition(
             JSON.stringify(permission.condition),
             id
           )
           cannot(permission.action, permission.subject as any, condition as any)
         } else if (permission.fields) {
-          console.log("fields", permission.fields.split(","))
           cannot(
             permission.action,
             permission.subject as any,
@@ -75,7 +73,6 @@ export async function defineAbilitiesFor(role: number, id?: any) {
             condition as any
           )
         } else if (permission.condition) {
-          console.log("condition", JSON.stringify(permission.condition))
           const condition = parseCondition(
             JSON.stringify(permission.condition),
             id
@@ -94,7 +91,7 @@ export async function defineAbilitiesFor(role: number, id?: any) {
         }
       }
     }
-    console.log(build())
+
     return build()
   } catch (error) {
     console.error("Error fetching permissions:", error)

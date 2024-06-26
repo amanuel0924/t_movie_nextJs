@@ -92,7 +92,6 @@ const Example = (datas: dataResponseProp) => {
   const { replace } = useRouter()
 
   const [ablity, setAbility] = useState<AppAbility>()
-  console.log(ablity?.rules, "rulre.......................")
   useEffect(() => {
     const getAbility = async () => {
       const abilities = await defineAbilitiesFor(

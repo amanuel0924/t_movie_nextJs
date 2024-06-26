@@ -7,7 +7,7 @@ import { createWhereClause } from "./sharedAction"
 import { createPrismaAbility } from "@casl/prisma"
 import { defineAbilitiesFor } from "@/db/reactCasl"
 import { accessibleBy } from "@casl/prisma"
-import { User } from "@prisma/client"
+import { User, Permission } from "@prisma/client"
 import { subject } from "@casl/ability"
 import { permittedFieldsOf } from "@casl/ability/extra"
 import pick from "lodash/pick"
@@ -41,6 +41,7 @@ export const getAdminData = async (
   user: User & {
     roleId: number
     id: string
+    permissions: Permission[]
   }
 ) => {
   const {

@@ -20,7 +20,6 @@ const Program = async ({ searchParams }: any) => {
   const category = await getCategories()
 
   const session = await getServerSession(options)
-  console.log("setiion", session)
   const data = await getAdminData(searchParams, session?.user as any)
 
   return (

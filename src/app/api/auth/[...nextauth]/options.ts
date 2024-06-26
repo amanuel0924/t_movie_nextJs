@@ -29,7 +29,6 @@ export const options: NextAuthOptions = {
             },
           },
         })
-        console.log("------------------------------------------------", user)
 
         if (!user) {
           return null
@@ -38,12 +37,12 @@ export const options: NextAuthOptions = {
         if (user.password !== credentials.password) {
           return null
         }
-
         return {
           id: user.id,
           name: user.name,
           email: user.email,
           roleId: user.roleId,
+          permissions: user.role.Permissions,
         }
       },
     }),
@@ -55,6 +54,7 @@ export const options: NextAuthOptions = {
           ...token,
           roleId: user.roleId,
           id: user.id,
+          permissions: user.permissions,
         }
       }
       return token
@@ -66,6 +66,7 @@ export const options: NextAuthOptions = {
           ...session.user,
           roleId: token.roleId,
           id: token.id,
+          permissions: token.permissions,
         },
       }
     },
